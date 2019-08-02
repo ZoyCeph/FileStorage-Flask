@@ -5,7 +5,7 @@ Created on Wed Jul 31 09:14:19 2019
 @author: ProjectDept
 """
 
-import os, glob
+import os, glob, socket
 from flask import Flask, render_template, request, send_from_directory
 from flask_uploads import UploadSet, configure_uploads, ALL
 
@@ -20,6 +20,22 @@ MyFolder=r'D:\testzone\files'
 pattern = '*.*'
 os.chdir(MyFolder)
 
+
+def get_host_ip():
+    """
+    查询本机ip地址
+    :return: ip
+    """
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
+    return ip
+
+print(' * Current IP: '+get_host_ip())
+
 @app.route('/')
 def index():
     return '<a href="/download"> 文件下载 </a><a href="/upload"> 文件上传 </a>'
@@ -30,7 +46,7 @@ def filelist():
     for fname in glob.glob(pattern):
         if os.path.isfile(fname):
             key = fname
-            maps[key]= os.path.getsize(fname)/1024
+            maps[key]= os.path.getsize(fname)/1048576
     return render_template('download.htm', files=maps)
 
 @app.route('/download/<filename>')
